@@ -41,7 +41,7 @@ void loop()
 
     if (millis() >= showTime) {
     if(posM1 != pos) {
-      Serial.println(String(pos)+"\t"+String(showTime/10)+"\t"+String(micros()-showMicros)+"\t"+String(showTime/10));
+      Serial.println(String(pos)+"\t"+String(showTime/10)+"\t"+String(micros()-showMicros)+"\t"/* steps/micros */ );
       posM1=pos;
       showMicros=micros();
       
