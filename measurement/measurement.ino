@@ -41,6 +41,10 @@ void loop()
 
     if (millis() >= showTime) {
     if(posM1 != pos) {
+      if(pos >= 2400)
+      {
+        pos -= 2400;
+      }
       Serial.println(String(pos)+"\t"+String(showTime/10)+"\t"+String(micros()-showMicros)+"\t"/* steps/micros */ );
       posM1=pos;
       showMicros=micros();
@@ -50,7 +54,6 @@ void loop()
   }
 
 }
-
 
 void onRotaryChange() {
   // state = 0 .. 3 depending on input signal level
