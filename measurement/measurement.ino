@@ -4,11 +4,6 @@
 #define WHITE_WIRE_PIN 15
 #define GREEN_WIRE_PIN 2
 
-void log()
-{
-  Serial.print(micros() + "    ");
-}
-
 void setup()
 {
   Serial.begin(115200);
@@ -43,7 +38,11 @@ void loop()
     if(posM1 != pos) {
       if(pos >= 2400)
       {
-        pos -= 2400;
+        pos -= 2400;        
+      }
+      if(pos < 0)
+      {
+        pos += 2400;
       }
       Serial.println(String(pos)+"\t"+String(showTime/10)+"\t"+String(micros()-showMicros)+"\t"/* steps/micros */ );
       posM1=pos;
