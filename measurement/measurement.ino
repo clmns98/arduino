@@ -55,7 +55,7 @@ void loop()
 
 void onRotaryChange() {
   deltaT = micros()-showMicros;
-  omega = 1 / deltaT * 10000000000;
+  //omega = 1 / deltaT * 10000000000;
   // state = 0 .. 3 depending on input signal level
   int state = (digitalRead(GREEN_WIRE_PIN)==HIGH ? 1 : 0) + (digitalRead(WHITE_WIRE_PIN)==HIGH ? 2 : 0);
   if      (lastState==0) pos += state==1 ? 1 : -1;
