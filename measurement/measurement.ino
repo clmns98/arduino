@@ -17,8 +17,10 @@ void setup()
   // Use two interrupt function to catch rising pulses
   attachInterrupt(digitalPinToInterrupt(WHITE_WIRE_PIN), onRotaryChange, CHANGE);
   attachInterrupt(digitalPinToInterrupt(GREEN_WIRE_PIN), onRotaryChange, CHANGE);
-  Serial.println("-startup-");
-
+  Serial.println("\n");
+  Serial.println("---startup---");
+  Serial.println(String("position") + "\t" + String("time") + "\t" + String("deltaT") + "\t" + String("speed-omega"));
+  Serial.println("-------------------------------------------");
 }
 
 // the position of the axis; changes whenever an interrupt happens due to rotation of the encoder
@@ -43,18 +45,17 @@ void loop()
       {
         pos += 2400;
       }
-      Serial.println(String(pos)+"\t"+String(showTime)+"\t"+"\t"+String(deltaT)+"\t"+String(omega));
+      Serial.println(String(pos)+"\t"+"\t"+String(showTime)+"\t"+String(int(deltaT))+"\t"+String(int(omega)));
       posM1=pos;
       
     }
     showTime+=50;
   }
-
 }
 
 void onRotaryChange() {
   deltaT = micros()-showMicros;
-  omega = 1.0 / deltaT * 1000000000000.0;
+  omega = 1 / deltaT * 10000000000;
   // state = 0 .. 3 depending on input signal level
   int state = (digitalRead(GREEN_WIRE_PIN)==HIGH ? 1 : 0) + (digitalRead(WHITE_WIRE_PIN)==HIGH ? 2 : 0);
   if      (lastState==0) pos += state==1 ? 1 : -1;
