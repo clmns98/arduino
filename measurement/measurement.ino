@@ -11,7 +11,7 @@ void setup()
   // the encoder has open collector connections, so we need a pullup resistor.
   // caution : NEVER connect the WHITE or GREEN WIRE to a GPIO which is configured as OUTPUT
   //           because if the OUTPUT IS HIGH it might burn the transistor inside the encoder
-  pinMode(WHITE_WIRE_PIN, INPUT_PULLUP); // internal pullup input pin 2 
+  pinMode(WHITE_WIRE_PIN, INPUT_PULLUP); // internal pullup input pin 2
   pinMode(GREEN_WIRE_PIN, INPUT_PULLUP); // internalเป็น pullup input pin 3
 
   // Use two interrupt function to catch rising pulses
@@ -24,44 +24,51 @@ void setup()
 }
 
 // the position of the axis; changes whenever an interrupt happens due to rotation of the encoder
-volatile int pos=0, posM1=0;
- 
+volatile int pos = 0, posM1 = 0;
+
 unsigned long showTime = micros(); // returns the number of milliseconds passed since the Arduino began running the program
 unsigned long showMicros = micros(); // returns the number of microseconds passed since the Arduino began running the program
 unsigned long distance = 0;
 double deltaT = 0;
 double omega = 0;
-volatile int lastState= (digitalRead(GREEN_WIRE_PIN)==HIGH ? 1 : 0) + (digitalRead(WHITE_WIRE_PIN)==HIGH ? 2:0); // condition ? result_if_true : result_if_false
+short steps = 0;
+volatile int lastState = (digitalRead(GREEN_WIRE_PIN) == HIGH ? 1 : 0) + (digitalRead(WHITE_WIRE_PIN) == HIGH ? 2 : 0); // condition ? result_if_true : result_if_false
+
+unsigned long long counter = 0;
 
 void loop()
 {
-    if (micros() >= showTime) {
-    if(posM1 != pos) {
-      if(pos >= 2400)
+  if (micros() >= showTime) {
+    if (posM1 != pos) {
+      if (pos >= 2400)
       {
-        pos -= 2400;        
+        pos -= 2400;
       }
-      if(pos < 0)
+      if (pos < 0)
       {
         pos += 2400;
       }
-      Serial.println(String(pos)+"\t"+"\t"+String(showTime)+"\t"+String(int(deltaT))+"\t"+String(int(omega)));
-      posM1=pos;
-      
+      Serial.println(String(pos) + "\t" + "\t" + String(showTime) + "\t" + String(int(deltaT)) + "\t" + String(int(omega)));
+      posM1 = pos;
+
     }
-    showTime+=50;
+    showTime += 50;
   }
 }
 
 void onRotaryChange() {
-  deltaT = micros()-showMicros;
-  //omega = 1 / deltaT * 10000000000;
+  deltaT = micros() - showMicros;
+  steps = pos - posM1;
+  if (steps < 0) {
+    steps * -1;
+  }
+  omega = steps / deltaT * 1000000;
   // state = 0 .. 3 depending on input signal level
-  int state = (digitalRead(GREEN_WIRE_PIN)==HIGH ? 1 : 0) + (digitalRead(WHITE_WIRE_PIN)==HIGH ? 2 : 0);
-  if      (lastState==0) pos += state==1 ? 1 : -1;
-  else if (lastState==1) pos += state==3 ? 1 : -1;
-  else if (lastState==2) pos += state==0 ? 1 : -1;
-  else if (lastState==3) pos += state==2 ? 1 : -1;
-  lastState=state;
-  showMicros=micros();
+  int state = (digitalRead(GREEN_WIRE_PIN) == HIGH ? 1 : 0) + (digitalRead(WHITE_WIRE_PIN) == HIGH ? 2 : 0);
+  if      (lastState == 0) pos += state == 1 ? 1 : -1;
+  else if (lastState == 1) pos += state == 3 ? 1 : -1;
+  else if (lastState == 2) pos += state == 0 ? 1 : -1;
+  else if (lastState == 3) pos += state == 2 ? 1 : -1;
+  lastState = state;
+  showMicros = micros();
 }
