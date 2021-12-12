@@ -8,9 +8,6 @@ void setup()
 {
   Serial.begin(115200);
 
-  // the encoder has open collector connections, so we need a pullup resistor.
-  // caution : NEVER connect the WHITE or GREEN WIRE to a GPIO which is configured as OUTPUT
-  //           because if the OUTPUT IS HIGH it might burn the transistor inside the encoder
   pinMode(WHITE_WIRE_PIN, INPUT_PULLUP); // internal pullup input pin 2
   pinMode(GREEN_WIRE_PIN, INPUT_PULLUP); // internalเป็น pullup input pin 3
 
@@ -28,13 +25,17 @@ volatile int pos = 0, posM1 = 0;
 
 unsigned long showTime = micros(); // returns the number of milliseconds passed since the Arduino began running the program
 unsigned long showMicros = micros(); // returns the number of microseconds passed since the Arduino began running the program
-unsigned long distance = 0;
-double deltaT = 0;
-double omega = 0;
-short steps = 0;
+
+  // these are the important values wich are going to be printed
+  unsigned long distance = 0;
+  double deltaT = 0;
+  double omega = 0;
+  short steps = 0;
+
 volatile int lastState = (digitalRead(GREEN_WIRE_PIN) == HIGH ? 1 : 0) + (digitalRead(WHITE_WIRE_PIN) == HIGH ? 2 : 0); // condition ? result_if_true : result_if_false
 
-unsigned long long counter = 0;
+short outputCounter = 0;
+unsigned int output[100][4];
 
 void loop()
 {
@@ -48,7 +49,24 @@ void loop()
       {
         pos += 2400;
       }
-      Serial.println(String(pos) + "\t" + "\t" + String(showTime) + "\t" + String(int(deltaT)) + "\t" + String(int(omega)));
+      //Serial.println(String(pos) + "\t" + "\t" + String(showTime) + "\t" + String(int(deltaT)) + "\t" + String(int(omega)));
+      output[outputCounter][0] = pos;
+      output[outputCounter][1] = showTime;
+      output[outputCounter][2] = deltaT;
+      output[outputCounter][3] = omega;
+      if(outputCounter == 100)
+      {
+        outputCounter = 0;
+        for(int i=0;i<101;i++)
+        {
+          Serial.print(String(output[i][0]) + "\t");
+          Serial.print(String(output[i][1]) + "\t");
+          Serial.print(String(output[i][2]) + "\t");
+          Serial.print(String(output[i][3]));
+          Serial.print("\n");
+        }             
+      }
+      outputCounter++;
       posM1 = pos;
 
     }
@@ -59,9 +77,6 @@ void loop()
 void onRotaryChange() {
   deltaT = micros() - showMicros;
   steps = pos - posM1;
-  if (steps < 0) {
-    steps * -1;
-  }
   omega = steps / deltaT * 1000000;
   // state = 0 .. 3 depending on input signal level
   int state = (digitalRead(GREEN_WIRE_PIN) == HIGH ? 1 : 0) + (digitalRead(WHITE_WIRE_PIN) == HIGH ? 2 : 0);
