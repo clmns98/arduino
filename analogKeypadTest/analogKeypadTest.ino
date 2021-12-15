@@ -1,10 +1,28 @@
 #define PIN 27
-long long sum;
-short iterator = 10;
+long long sum = 0;
+short iterator = 300;
 
-void setup() {
-  // Setup serial monitor
-  Serial.begin(115200);
+void keypad(int n) {
+  switch (n) {
+    case 4045 ... 4145: // 4095
+      Serial.println("first key");
+      break;
+    case 3775 ... 3875: // 3825
+      Serial.println("second key");
+      break;
+    case 3238 ... 3338: // 3288
+      Serial.println("third key");
+      break;
+
+    default:
+      Serial.println("no button pressed");
+  }
+}
+
+void keypadSetup()
+{  
+  // analogReadResolution(9);
+  pinMode(PIN, INPUT);
   Serial.println(" ");
   Serial.println("---------------------------");
   Serial.println("--Starting Keypad Sketch!--");
@@ -12,26 +30,33 @@ void setup() {
   Serial.println(" ");
   Serial.println("      (pin side) ");
   Serial.println(" /------/------/------/");
-  Serial.println(" / 4097 / 4097 / 4097 /");
+  Serial.println(" / 4095 / 3825 / 3288 /");
   Serial.println(" /------/------/------/");
-  Serial.println(" / 4097 / 4097 / 4097 /");
+  Serial.println(" / 2962 / 2731 / 2532 /");
   Serial.println(" /------/------/------/");
-  Serial.println(" / 3677 / 3319 / 3064 /");
+  Serial.println(" / 2396 / 2224 / 2096 /");
   Serial.println(" /------/------/------/");
-  Serial.println(" / 2878 / 2721 / 2582 /");
+  Serial.println(" / 1978 / 1872 / 1778 /");
   Serial.println(" /------/------/------/");
   Serial.println("      (bottom side) ");
   Serial.println(" ");
-  
-  pinMode(PIN, INPUT);
+}
+
+void setup() {
+  // Setup serial monitor
+  Serial.begin(115200);
+  keypadSetup();
 }
 
 void loop() {
-  for(int i=0;i<(iterator+1);i++)
+  for(int i=0;i<iterator;i++)
   {
     sum += analogRead(PIN);
   }
-  Serial.println(sum /= iterator);
-  delay(200);
+  sum /= iterator;
+  Serial.println(sum);
+  keypad(sum);
+  sum = 0;
+  delay(500);
 
 }

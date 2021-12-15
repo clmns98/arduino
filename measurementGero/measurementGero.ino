@@ -127,6 +127,9 @@ void keypad() {
     case 401 ... 500:
       Serial.println("401 ... 500");
       break;
+    case 501 ... 600:
+      Serial.println("401 ... 500");
+      break;
 
     default:
       Serial.println("touch");
@@ -187,7 +190,7 @@ typedef struct valueStruct {
     long dTime[LOG_MAX];
     long lastPos;
 } valueStruct;
-  
+
 valueStruct measuredValues;
 
 measuredValues.n=0;
