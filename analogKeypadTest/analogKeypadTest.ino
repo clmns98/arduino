@@ -3,15 +3,42 @@ long long sum = 0;
 short iterator = 300;
 
 void keypad(int n) {
-  switch (n) {
-    case 4045 ... 4145: // 4095
-      Serial.println("first key");
+  switch (n) { // +- 30
+    case 4065 ... 4125: // 4095
+      Serial.println("key one");
       break;
-    case 3775 ... 3875: // 3825
-      Serial.println("second key");
+    case 3795 ... 3855: // 3825
+      Serial.println("key two");
       break;
-    case 3238 ... 3338: // 3288
-      Serial.println("third key");
+    case 3258 ... 3318: // 3288
+      Serial.println("key three");
+      break;
+    case 2932 ... 2992: // 2962
+      Serial.println("key four");
+      break;
+    case 2701 ... 2761: // 2731
+      Serial.println("key five");
+      break;
+    case 2502 ... 2562: // 2532
+      Serial.println("key six");
+      break;
+    case 2366 ... 2426: // 2396
+      Serial.println("key seven");
+      break;
+    case 2194 ... 2254: // 2224
+      Serial.println("key eight");
+      break;
+    case 2066 ... 2126: // 2096
+      Serial.println("key nine");
+      break;
+    case 1948 ... 2008: // 1978
+      Serial.println("key ten");
+      break;
+    case 1842 ... 1902: // 1872
+      Serial.println("key eleven");
+      break;
+    case 1748 ... 1808: // 1778
+      Serial.println("key twelve");
       break;
 
     default:

@@ -110,29 +110,47 @@ int getKeypadValue() {
 
 // interpret the value
 
-void keypad() {
-  switch (getKeypadValue()) {
-    case 1 ... 100: // button one pressed
-      Serial.println("1 ... 100");
+void keypad(int n) {
+  switch (n) { // +- 30
+    case 4065 ... 4125: // 4095
+      Serial.println("key one");
       break;
-    case 101 ... 200: // button two pressed
-      Serial.println("101 ... 200");
+    case 3795 ... 3855: // 3825
+      Serial.println("key two");
       break;
-    case 201 ... 300: // ...
-      Serial.println("201 ... 300");
+    case 3258 ... 3318: // 3288
+      Serial.println("key three");
       break;
-    case 301 ... 400:
-      Serial.println("301 ... 400");
+    case 2932 ... 2992: // 2962
+      Serial.println("key four");
       break;
-    case 401 ... 500:
-      Serial.println("401 ... 500");
+    case 2701 ... 2761: // 2731
+      Serial.println("key five");
       break;
-    case 501 ... 600:
-      Serial.println("401 ... 500");
+    case 2502 ... 2562: // 2532
+      Serial.println("key six");
+      break;
+    case 2366 ... 2426: // 2396
+      Serial.println("key seven");
+      break;
+    case 2194 ... 2254: // 2224
+      Serial.println("key eight");
+      break;
+    case 2066 ... 2126: // 2096
+      Serial.println("key nine");
+      break;
+    case 1948 ... 2008: // 1978
+      Serial.println("key ten");
+      break;
+    case 1842 ... 1902: // 1872
+      Serial.println("key eleven");
+      break;
+    case 1748 ... 1808: // 1778
+      Serial.println("key twelve");
       break;
 
     default:
-      Serial.println("touch");
+      Serial.println("no button pressed");
   }
 }
 
