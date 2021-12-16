@@ -111,18 +111,22 @@ int getKeypadValue() {
 // interpret the value
 
 void keypad(int n) {
-  switch (n) { // +- 30
+  switch (n) { // margin is +- 30
     case 4065 ... 4125: // 4095
-      Serial.println("key one");
+      Serial.println("motor off: ENABLE PIN HIGH");
+      digitalWrite(MOTOR_ENABLE_PIN, HIGH);
       break;
     case 3795 ... 3855: // 3825
-      Serial.println("key two");
+      Serial.println("motor on: ENABLE PIN LOW");
+      digitalWrite(MOTOR_ENABLE_PIN, LOW);
       break;
     case 3258 ... 3318: // 3288
       Serial.println("key three");
+      // swing up - calibration sequence
       break;
     case 2932 ... 2992: // 2962
       Serial.println("key four");
+      // current motor pos as 0
       break;
     case 2701 ... 2761: // 2731
       Serial.println("key five");

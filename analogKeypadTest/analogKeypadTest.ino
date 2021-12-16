@@ -1,6 +1,6 @@
 #define PIN 27
 long long sum = 0;
-short iterator = 300;
+short iterator = 100;
 
 void keypad(int n) {
   switch (n) { // +- 30
@@ -41,13 +41,13 @@ void keypad(int n) {
       Serial.println("key twelve");
       break;
 
-    default:
-      Serial.println("no button pressed");
+    /*default:
+      Serial.println("no button pressed");*/
   }
 }
 
 void keypadSetup()
-{  
+{
   // analogReadResolution(9);
   pinMode(PIN, INPUT);
   Serial.println(" ");
@@ -84,6 +84,6 @@ void loop() {
   Serial.println(sum);
   keypad(sum);
   sum = 0;
-  delay(500);
+  delay(100);
 
 }
