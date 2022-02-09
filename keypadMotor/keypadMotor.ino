@@ -91,4 +91,5 @@ void loop() {
   readKeypad();
   keypad(sum);
   stepper.run();
+  delay(1);
 }
