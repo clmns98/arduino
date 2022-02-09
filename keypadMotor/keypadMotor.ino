@@ -10,7 +10,7 @@
 #define SET_ACCELERATION_SPEED 8000
 #define MOVE_TO 100
 
-short iterator = 10;
+short iterator = 8;
 int sum = 0;
 int position = 0;
 
