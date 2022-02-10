@@ -6,13 +6,14 @@
 
 #define KEYPAD_PIN 25
 
-#define SET_MAX_SPEED 1500
-#define SET_ACCELERATION_SPEED 8000
-#define MOVE_TO 100
-
 short iterator = 8;
-int sum = 0;
+int keypadValue = 0;
 int position = 0;
+bool clockwisePressed = false;
+bool antiClockwisePressed = false;
+boolean hasButtonReleaseBeenOutput = true;
+const int standardAccelerationSpeed = 8000;
+int accelerationSpeed = standardAccelerationSpeed;
 
 AccelStepper stepper = AccelStepper(AccelStepper::DRIVER, MOTOR_STEP_PIN, MOTOR_DIR_PIN); // Defaults to AccelStepper::DRIVER
 
@@ -23,10 +24,23 @@ void keypadSetup()
   Serial.println("---------------------------");
   Serial.println("--Starting Keypad Sketch!--");
   Serial.println("---------------------------");
+  Serial.println(" ");
+  Serial.println("              (pin side) ");
+  Serial.println(" /------------------------------------------/");
+  Serial.println(" / ______     / LOW               / HIGH    /");
+  Serial.println(" /-------------------------------------------");
+  Serial.println(" / clockwise  / antiClockwise     / restart /");
+  Serial.println(" /------------------------------------------/");
+  Serial.println(" / ______     / ______            / ______   ");
+  Serial.println(" /------------------------------------------/");
+  Serial.println(" / ______     / ______            / ______  /");
+  Serial.println(" /------------------------------------------/");
+  Serial.println("              (bottom side) ");
+  Serial.println(" ");
 }
 
-void keypad(int n) {
-  switch (n) { // +- 40
+void keypad() {
+  switch (keypadValue) { // +- 40
     case 4055 ... 4135: // 4095
       Serial.println("key one");
       break;
@@ -39,12 +53,14 @@ void keypad(int n) {
       digitalWrite(MOTOR_ENABLE_PIN, HIGH);
       break;
     case 2922 ... 3002: // 2962
-      position += 10;
+      position += 1;
       stepper.moveTo(position);
+      pressButtonClockwise();
       break;
     case 2691 ... 2771: // 2731
-      position -= 10;
+      position -= 1;
       stepper.moveTo(position);
+      pressButtonAntiClockwise();
       break;
     case 2492 ... 2572: // 2532
       ESP.restart();
@@ -57,10 +73,48 @@ void readKeypad() {
   for(int i=0;i<iterator;i++)
   {
     temp += analogRead(KEYPAD_PIN);
+    delayMicroseconds(1950);
   }
   temp /= iterator;
-  sum = temp;
-  
+  keypadValue = temp;
+}
+
+void pressButtonClockwise() {
+    clockwisePressed = true;
+    hasButtonReleaseBeenOutput = false;
+    Serial.println("Button pressed");
+}
+
+void pressButtonAntiClockwise() {
+    antiClockwisePressed = true;
+    hasButtonReleaseBeenOutput = false;
+    Serial.println("Button pressed");
+}
+
+void isButtonReleased() {
+    if((keypadValue > 3002 || keypadValue < 2922) && !hasButtonReleaseBeenOutput) {
+        isPressed = false;
+        hasButtonReleaseBeenOutput = true;
+        Serial.println("Button released");
+    }
+    else if((keypadValue > 2771 || keypadValue < 2691) && !hasButtonReleaseBeenOutput) {
+        isPressed = false;
+        hasButtonReleaseBeenOutput = true;
+        Serial.println("Button released");
+    }
+}
+
+void adaptAcceleration() {
+    if(isPressed) {
+        accelerationSpeed += 1;
+        stepper.setAcceleration(accelerationSpeed);
+    } else {
+        stepper.setAcceleration(standardAccelerationSpeed);
+    }
+}
+
+void showPosition() {
+    Serial.println(stepper.currentPosition());
 }
 
 void motorSetup() {
@@ -69,12 +123,16 @@ void motorSetup() {
      * 800 mAmp
      * 20 Volt
      */
+
+    #define SET_MAX_SPEED 1500
+    #define MOVE_TO 100
+
     pinMode(MOTOR_ENABLE_PIN, OUTPUT);  // enable (LOW)
     pinMode(MOTOR_DIR_PIN, OUTPUT);  // dir
     pinMode(MOTOR_STEP_PIN, OUTPUT);  // step
-    
+
     stepper.setMaxSpeed(SET_MAX_SPEED);
-    stepper.setAcceleration(SET_ACCELERATION_SPEED);
+    stepper.setAcceleration(standardAccelerationSpeed);
     stepper.setCurrentPosition(position); // position = 0
     stepper.moveTo(MOVE_TO);
 }
@@ -89,7 +147,10 @@ void setup() {
 
 void loop() {
   readKeypad();
-  keypad(sum);
+  keypad();
+  showPosition();
+  isButtonReleased();
+  adaptAcceleration();
   stepper.run();
-  delay(1);
+  delay(random(1,10));
 }
