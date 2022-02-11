@@ -9,8 +9,7 @@
 short iterator = 8;
 int keypadValue = 0;
 int position = 0;
-bool clockwisePressed = false;
-bool antiClockwisePressed = false;
+bool isPressed = false;
 boolean hasButtonReleaseBeenOutput = true;
 const int standardAccelerationSpeed = 8000;
 int accelerationSpeed = standardAccelerationSpeed;
@@ -52,19 +51,21 @@ void keypad() {
       Serial.println("motor off: ENABLE PIN HIGH");
       digitalWrite(MOTOR_ENABLE_PIN, HIGH);
       break;
-    case 2922 ... 3002: // 2962
+    case 2922 ... 3002: // 2962 - move clockwise
       position += 1;
       stepper.moveTo(position);
-      pressButtonClockwise();
+      pressButton();
       break;
-    case 2691 ... 2771: // 2731
+    case 2691 ... 2771: // 2731 - move antiClockwise
       position -= 1;
       stepper.moveTo(position);
-      pressButtonAntiClockwise();
+      pressButton();
       break;
     case 2492 ... 2572: // 2532
       ESP.restart();
       break;
+    /*default:
+      Serial.println("no button pressed");*/
   }
 }
 
@@ -79,29 +80,10 @@ void readKeypad() {
   keypadValue = temp;
 }
 
-void pressButtonClockwise() {
-    clockwisePressed = true;
+void pressButton() {
     hasButtonReleaseBeenOutput = false;
+    isPressed = true;
     Serial.println("Button pressed");
-}
-
-void pressButtonAntiClockwise() {
-    antiClockwisePressed = true;
-    hasButtonReleaseBeenOutput = false;
-    Serial.println("Button pressed");
-}
-
-void isButtonReleased() {
-    if((keypadValue > 3002 || keypadValue < 2922) && !hasButtonReleaseBeenOutput) {
-        isPressed = false;
-        hasButtonReleaseBeenOutput = true;
-        Serial.println("Button released");
-    }
-    else if((keypadValue > 2771 || keypadValue < 2691) && !hasButtonReleaseBeenOutput) {
-        isPressed = false;
-        hasButtonReleaseBeenOutput = true;
-        Serial.println("Button released");
-    }
 }
 
 void adaptAcceleration() {
@@ -148,9 +130,14 @@ void setup() {
 void loop() {
   readKeypad();
   keypad();
-  showPosition();
-  isButtonReleased();
+  // showPosition();
   adaptAcceleration();
+  Serial.println(keypadValue);
   stepper.run();
+  if(!isPressed && !hasButtonReleaseBeenOutput) {
+      Serial.println("---Button released---");
+      hasButtonReleaseBeenOutput = true;
+  }
+  isPressed = false;
   delay(random(1,10));
 }
