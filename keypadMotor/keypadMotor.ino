@@ -1,4 +1,5 @@
 #include <AccelStepper.h>
+#include <Adafruit_NeoPixel.h>
 
 #define MOTOR_STEP_PIN 33
 #define MOTOR_DIR_PIN 32
@@ -6,12 +7,14 @@
 
 #define KEYPAD_PIN 25
 
-int keypadValue = 0;
-int position = 0;
-bool isPressed = false;
-boolean hasButtonReleaseBeenOutput = true;
+int timeLogMessage,
+    keypadValue,
+    motorPosition = 0;
 
-const int standardAccelerationSpeed = 8000;
+bool isPressed = false;
+bool hasButtonReleaseBeenOutput = true;
+
+const int standardAccelerationSpeed = 1000;
 int accelerationSpeed = standardAccelerationSpeed;
 
 const int standardMaxSpeed = 1500;
@@ -43,8 +46,10 @@ void keypadSetup()
 
 // =============================================================== KEYPAD
 
-void keypad() {
-  switch (keypadValue) { // threshold is +/- 40
+void executeKeypad() {
+    if (keypadValue <= 0) return;
+
+    switch (keypadValue) { // threshold is +/- 40
     case 4055 ... 4135: // 4095
       Serial.println("key one");
       break;
@@ -57,13 +62,13 @@ void keypad() {
       digitalWrite(MOTOR_ENABLE_PIN, HIGH);
       break;
     case 2922 ... 3002: // 2962 - move clockwise
-      position += 1;
-      stepper.moveTo(position);
+      motorPosition += 1;
+      stepper.moveTo(motorPosition);
       pressButton();
       break;
     case 2691 ... 2771: // 2731 - move antiClockwise
-      position -= 1;
-      stepper.moveTo(position);
+      motorPosition -= 1;
+      stepper.moveTo(motorPosition);
       pressButton();
       break;
     case 2492 ... 2572: // 2532 - restart ESP32
@@ -71,20 +76,20 @@ void keypad() {
       break;
     /*default:
       Serial.println("no button pressed");*/
-  }
+    }
 }
 
 #define ITERATOR 8
 
 void readKeypad() {
-  int temp = 0;
-  for(int i=0;i<ITERATOR;i++)
-  {
+    int temp = 0;
+    for(int i=0;i<ITERATOR;i++)
+    {
     temp += analogRead(KEYPAD_PIN);
     delayMicroseconds(1950);            // pin is read out about every second millisecond
-  }
-  temp /= ITERATOR;
-  keypadValue = temp;
+    }
+    temp /= ITERATOR;
+    keypadValue = temp;
 }
 
 // =============================================================== MOTOR
@@ -102,25 +107,37 @@ void motorSetup() {
 
     stepper.setMaxSpeed(standardMaxSpeed);
     stepper.setAcceleration(standardAccelerationSpeed);
-    stepper.setCurrentPosition(position); // position = 0
+    stepper.setCurrentPosition(motorPosition); // motorPosition = 0
     stepper.moveTo(100);
 }
 
-#define FACTOR 10
+#define FACTOR 100
 
 void adaptAcceleration() {
     if(isPressed) {
-        accelerationSpeed, maxSpeed += (1 * FACTOR);
+        accelerationSpeed+= (1 * FACTOR);
+        maxSpeed += (1 * FACTOR);
         stepper.setAcceleration(accelerationSpeed);
         stepper.setMaxSpeed(maxSpeed);
     } else {
         stepper.setAcceleration(standardAccelerationSpeed);
+        accelerationSpeed = standardAccelerationSpeed;
         stepper.setMaxSpeed(standardMaxSpeed);
+        maxSpeed = standardMaxSpeed;
     }
 }
 
-void showPosition() {
-    Serial.println(stepper.currentPosition());
+void log() {
+    if(timeLogMessage + 1000 <= millis()) {
+        Serial.println("");
+        Serial.println("current position:" + String(stepper.currentPosition()));
+        Serial.println("max speed:" + String(stepper.maxSpeed()));
+        Serial.println("acceleration Speed:" + String(accelerationSpeed));
+        Serial.println("");
+        Serial.println(keypadValue);
+
+        timeLogMessage = millis();
+    }
 }
 
 // =============================================================== BUTTON
@@ -138,6 +155,30 @@ void buttonReleaseMessage() {
     }
 }
 
+// =============================================================== LEDS
+
+void ledSetup() {
+    Adafruit_NeoPixel strip = Adafruit_NeoPixel(        // define the LED strip (type WS2812)
+        2,                                              // number of color triples
+        27,                                             // pin connected to the strip
+        NEO_GRB + NEO_KHZ800                            // 800 kHz bit stream in GRB sequence
+    );
+
+    uint32_t blue = strip.Color(0, 0, 200);
+    strip.begin();
+    strip.fill(blue);
+    strip.show();
+}
+
+// =============================================================== OTHER
+
+void miscellaneous() {
+    stepper.run();
+    keypadValue = 0;
+    buttonReleaseMessage();
+    isPressed = false;
+}
+
 // =============================================================== SETUP AND LOOP
 
 void setup() {
@@ -145,17 +186,13 @@ void setup() {
   Serial.begin(115200);
   keypadSetup();
   motorSetup();
-
+  ledSetup();
 }
 
 void loop() {
   readKeypad();
-  keypad();
-  // showPosition();
+  executeKeypad();
+  log();
   adaptAcceleration();
-  Serial.println(keypadValue);
-  stepper.run();
-  buttonReleaseMessage();
-  isPressed = false;
-  delay(random(1,10));
+  miscellaneous();
 }

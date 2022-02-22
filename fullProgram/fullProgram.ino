@@ -772,10 +772,9 @@ String cmds[] = { "", // 1 .. 16
 
      "TOGGLE WHEEL",        "--",                "LEARN",     "RESET",
      "SWING",            "--",                "--", "--",
-     "CATCHER",            "SHOW",                "ACCEL -",     "CALIB
-PENDULUM",
+     "CATCHER",            "SHOW",                "ACCEL -",     "CALIBPENDULUM",
      "STOP",                "RELEASE",            "CALIB MOTOR",
-"ZERO PENDULUM"
+     "ZERO PENDULUM"
 };
 
 
@@ -906,27 +905,23 @@ int keyboardCheck() {
 
      // we expect to have an AC component of 50Hz on the key signal
      // because the cables will catch the frequency of the power line.
-     // therefore we collect signals for 20 msec (1 full wave) and use
-the average
+     // therefore we collect signals for 20 msec (1 full wave) and use the average
      // this will ideally eliminate the AC component.
 
      int key  = analogRead(33);        // keypad is connected to PIN #33
 
      // if we see a small value: NO KEY is currently pressed
      if (key < 600) {
-         keyReadAt=0;        // wait for the next moment of reading a
-key signal
+         keyReadAt=0;        // wait for the next moment of reading a key signal
          return cmdM1=0;     // last key was released
      }
 
-     // if we see a large value; calculate key value immediately because
-the effect
+     // if we see a large value; calculate key value immediately because the effect
      // of AC grid voltage overlay can be neglected
      if (key >= 2700) {
          keyReadAt = 0;
          int cmd = getCmd(key);
-         return (cmdM1==cmd) ? -1 : cmdM1=cmd;    // return -1 if same
-key pressed
+         return (cmdM1==cmd) ? -1 : cmdM1=cmd;    // return -1 if same key pressed
      }
 
      // else start collecting values
@@ -937,23 +932,20 @@ key pressed
          return -3;        // started to collect values
      }
 
-     // collect and sum up key values for 20 msec (= 1 wave at 50 Hz) =
-20000 usec
+     // collect and sum up key values for 20 msec (= 1 wave at 50 Hz) = 20000 usec
      if (now < keyReadAt + 20000) {
          keySum+=key;
          keyCount++;
          return -2;        // still collecting values
      }
 
-     // assign the command number based on the average key value we have
-seen
+     // assign the command number based on the average key value we have seen
      keyReadAt = 0;
      int cmd = getCmd(keySum / keyCount);
      // if (cmd!=cmdM1) show("@ "+String(now)+"\tread@
 "+String(keyReadAt)+"\tkeyCount="+String(keyCount)+"\tkeyAvg="+String(keySum/keyCount)+"
 --> cmd="+String(cmd)+"\t"+cmds[cmd]);
-     return (cmdM1==cmd) ? -1 : cmdM1=cmd;    // return -1 if same key
-pressed
+     return (cmdM1==cmd) ? -1 : cmdM1=cmd;    // return -1 if same key pressed
 }
 
 void setup() {
@@ -964,8 +956,8 @@ void setup() {
      resetButtonSetup();
      ledsSetup();
      motorSetup();
-        wheelSetup();
-        encSetup();
+     wheelSetup();
+     encSetup();
 
      show("INVERTED PENDULUM starting..");
 }
@@ -1076,8 +1068,7 @@ void show(String msg) {
 
 void observe() {
 
-     // user must have placed pendulum manually on the left side at some
-height
+     // user must have placed pendulum manually on the left side at some height
      // before calling this function
 
      Serial.println("observing");
