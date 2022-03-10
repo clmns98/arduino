@@ -46,50 +46,51 @@ void keypadSetup()
 
 // =============================================================== KEYPAD
 
-void executeKeypad() {
-    if (keypadValue <= 0) return;
-
-    switch (keypadValue) { // threshold is +/- 40
-    case 4055 ... 4135: // 4095
-      Serial.println("key one");
-      break;
-    case 3785 ... 3865: // 3825
-      Serial.println("motor on: ENABLE PIN LOW");
-      digitalWrite(MOTOR_ENABLE_PIN, LOW);
-      break;
-    case 3248 ... 3328: // 3288
-      Serial.println("motor off: ENABLE PIN HIGH");
-      digitalWrite(MOTOR_ENABLE_PIN, HIGH);
-      break;
-    case 2922 ... 3002: // 2962 - move clockwise
-      motorPosition += 1;
-      stepper.moveTo(motorPosition);
-      pressButton();
-      break;
-    case 2691 ... 2771: // 2731 - move antiClockwise
-      motorPosition -= 1;
-      stepper.moveTo(motorPosition);
-      pressButton();
-      break;
-    case 2492 ... 2572: // 2532 - restart ESP32
-      ESP.restart();
-      break;
-    /*default:
-      Serial.println("no button pressed");*/
+void executeKeypad(int n) {
+    switch (n) { // threshold is +/- 40
+        case 0: // 4095
+          Serial.println("no key pressed");
+          break;
+        case 4055 ... 4135: // 4095
+          Serial.println("key one");
+          break;
+        case 3785 ... 3865: // 3825
+          Serial.println("motor on: ENABLE PIN LOW");
+          digitalWrite(MOTOR_ENABLE_PIN, LOW);
+          break;
+        case 3248 ... 3328: // 3288
+          Serial.println("motor off: ENABLE PIN HIGH");
+          digitalWrite(MOTOR_ENABLE_PIN, HIGH);
+          break;
+        case 2922 ... 3002: // 2962 - move clockwise
+          motorPosition += 1;
+          stepper.moveTo(motorPosition);
+          pressButton();
+          break;
+        case 2691 ... 2771: // 2731 - move antiClockwise
+          motorPosition -= 1;
+          stepper.moveTo(motorPosition);
+          pressButton();
+          break;
+        case 2492 ... 2572: // 2532 - restart ESP32
+          ESP.restart();
+          break;
+        default:
+          Serial.println("error in executeKeypad() function");
     }
 }
 
 #define ITERATOR 8
 
-void readKeypad() {
+int readKeypad() {
     int temp = 0;
     for(int i=0;i<ITERATOR;i++)
     {
-    temp += analogRead(KEYPAD_PIN);
-    delayMicroseconds(1950);            // pin is read out about every second millisecond
+        temp += analogRead(KEYPAD_PIN);
+        delayMicroseconds(1950);         // pin is read out about every second millisecond
     }
     temp /= ITERATOR;
-    keypadValue = temp;
+    return temp;
 }
 
 // =============================================================== MOTOR
@@ -190,9 +191,8 @@ void setup() {
 }
 
 void loop() {
-  readKeypad();
-  executeKeypad();
-  log();
-  adaptAcceleration();
-  miscellaneous();
+    executeKeypad(readKeypad());
+    log();
+    adaptAcceleration();
+    miscellaneous();
 }

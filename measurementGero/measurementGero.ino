@@ -195,7 +195,7 @@ void setup() {
     motor.setMaxSpeed(swingSteps[s][0]);
     motor.setAcceleration(swingSteps[s][0]*3);
     motor.moveTo(swingSteps[s][1]/3);
-    motor.runToPosition();  // blocks until target will be reached
+    motor.runToPosition();                      // blocks until target will be reached
   }
 
   Serial.println("swing up complete, motPos="+String(motorPos())+"\tpenPos="/*+String(encoderPos())*/);

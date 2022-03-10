@@ -101,8 +101,7 @@ a changed signal
 
   */
 
-// =============================================================== RESET
-BUTTON
+// =============================================================== RESET BUTTON
 
 void resetFunc() {
      Serial.println("RESET .............");
@@ -154,16 +153,12 @@ int checkPositionSensor() {
 
 #include "AccelStepper.h"        // step motor control
 
-int                motorPPR        =    3200;    // 200 * 16 = 3200
-steps = full circle
-int                motorMultiplier =      3;    // a factor to make
-motor steps commensurable with encoder steps
-int                motorDist        =     600;    // steps for the next
-motor movement
-int             motorSpeed        =   1000;    // tolerable maximum speed
-int                motorAccel        =    3000;    // tolerable acceleration
-bool            motorIsOn        =    false;    // true if motor has
-electric power
+int motorPPR         =   3200;  // 200 * 16 = 3200 steps = full circle
+int motorMultiplier  =   3;     // a factor to make motor steps commensurable with encoder steps
+int motorDist        =   600;   // steps for the next motor movement
+int motorSpeed       =   1000;  // tolerable maximum speed
+int motorAccel       =   3000;  // tolerable acceleration
+bool motorIsOn       =   false; // true if motor has electric power
 
 AccelStepper motor = AccelStepper(AccelStepper::DRIVER,25,26);
 
@@ -194,33 +189,29 @@ void  motorSetup() {
         pinMode(26, OUTPUT);    // dir
         pinMode(25, OUTPUT);    // step
 
-        pinMode( 2, OUTPUT);    // NOT USED, CONNECTED TO step rate
-divider (1/8 or 1/16)
+        pinMode( 2, OUTPUT);    // NOT USED, CONNECTED TO step rate divider (1/8 or 1/16)
         digitalWrite(2,HIGH);
 
      motor.setAcceleration(motorAccel);
      motor.setMaxSpeed(motorSpeed);
-        motorOn();
-        motor.setCurrentPosition(0);
+     motorOn();
+     motor.setCurrentPosition(0);
 }
 void  motorCalibrate() {
 
-     int sensorThreshold = 150;    // values below this mean that the
-motor arm is close to the sensor
-     int sensorOffset = 190;    // the angle difference in steps between
-the sensor and the vertical position
+    int sensorThreshold = 150;    // values below this mean that the motor arm is close to the sensor
+    int sensorOffset = 190;    // the angle difference in steps between the sensor and the vertical position
 
      // use decent speed and acceleration
      motor.setAcceleration(1500);
      motor.setMaxSpeed(700);
-        motorOn();
+     motorOn();
         // wherever we are: assume it to be ZERO
-        motor.setCurrentPosition(0);
+     motor.setCurrentPosition(0);
 
 
-        motor.moveTo(-300);    // should be enough to get the motor arm
-away from the sensor
-        motor.runToPosition();
+    motor.moveTo(-300);    // should be enough to get the motor arm away from the sensor
+    motor.runToPosition();
 
      // in case the motor arm is still close to the sensor: move away
      if (checkPositionSensor() < sensorThreshold) {
@@ -233,8 +224,7 @@ away from the sensor
         int zeroPosition=0;
         int posValue;
      for (;;) {
-         if (!motor.isRunning()) break;    // full circle completed
-without detection
+         if (!motor.isRunning()) break;    // full circle completed without detection
          if (motor.run()) {
              // if we made a step check the sensor
              posValue=checkPositionSensor();
@@ -266,18 +256,12 @@ without detection
 leads to the final speed of the series
 // zero = 9600 ticks = bottom, negative values = 9600 - pos
 
-#define            REC_NO_SERIES             10        // the number of
-serieses we hold
-#define            REC_SIZE                100        // the number of
-positions we hold : 100 * 96 = 9600
-long            rec[REC_NO_SERIES][2][REC_SIZE];// time gap for time /
-direction / pendulum position
-int                recSpeedResolution    =      24;    // time interval
-for speed detection
-int                recResolution        =      96;    // time interval
-for recording; MUST BE multiple of speedRes
-int                recSeriesNr            =       0;    // the index of
-the next series to be recorded
+#define REC_NO_SERIES       10              // the number of serieses we hold
+#define REC_SIZE            100             // the number of positions we hold : 100 * 96 = 9600
+long    rec[REC_NO_SERIES][2][REC_SIZE];    // time gap for time / direction / pendulum position
+int     recSpeedResolution  =      24;      // time interval for speed detection
+int     recResolution       =      96;      // time interval for recording; MUST BE multiple of speedRes
+int     recSeriesNr         =       0;      // the index of the next series to be recorded
 
 // for performance reasons the code to fill the recorder array is
 included inline where needed
@@ -285,19 +269,14 @@ included inline where needed
 // ===============================================================
 ENCODER (CONTROL WHEEL)
 
-#include "RotaryEncoder.h"        // an optical encoder with two output
-signals
+#include "RotaryEncoder.h"        // an optical encoder with two output signals
 
-int                wheelMultiplier    =        1;        // numerical
-steps per physical pulse
-int                wheelPPR        =    9600;        // physical pulses
-per round * multiplier; 600 lines => 2400 * 4 pulses
-long            wheelPos        =        0;        // position of
-control weheel
-long            wheelPosM1        =        0;        // previous
-position of control wheel
-boolean            wheelMode        =     false;
-RotaryEncoder    wheel;
+int     wheelMultiplier =       1;        // numericalsteps per physical pulse
+int     wheelPPR        =    9600;        // physical pulsesper round * multiplier; 600 lines => 2400 * 4 pulses
+long    wheelPos        =       0;        // position ofcontrol weheel
+long    wheelPosM1      =       0;        // previousposition of control wheel
+boolean wheelMode       =   false;
+RotaryEncoder   wheel;
 
 void onPulseWheel() { wheel.handlePulse(); }    // pulse detection
 
@@ -321,8 +300,7 @@ void wheelCheck() {
          // shift values
          wheelPosM1 = wheelPos;
          wheelPos = wheel.position / 10;    // reduce resolution
-         motorSetTarget(wheelPos*4);    // translate gear ratio to 1:1
-between wheel and motor
+         motorSetTarget(wheelPos*4);    // translate gear ratio to 1:1 between wheel and motor
          // Serial.println(String("wheel ")+String(wheelPos));
      }
 }
@@ -330,30 +308,21 @@ between wheel and motor
 // ===============================================================
 ENCODER (PENDULUM)
 
-unsigned long     encAt            =          0;    // time (usec) of
-last pendulum (encoder) change
-int                encMultiplier    =        4;    // numerical steps
-per physical pulse
-int                encPPR            =    9600;    // physical pulses
-per round * multiplier; 600 lines => 2400 * 4 pulses
-long            penPos            =        0;    // position of pendulum
-(from outside world perspective
-long            penPosM1        =        0;
-long            penPosM2        =        0;
-long            penPosMax        =        0;
-long            penPosMin        =        0;
-int                penState         =     ' ';    // current state like
-left side, left peek, right side, right peek
-int                penStateM1        =        ' ';
-long            penGap            =        0;    // the number of
-microseconds between two physical pulses
-int             encPositionM1     =         0;    // previous encoder
-position
+unsigned long   encAt           =       0;    // time (usec) oflast pendulum (encoder) change
+int             encMultiplier   =       4;    // numerical stepsper physical pulse
+int             encPPR          =    9600;    // physical pulsesper round * multiplier; 600 lines => 2400 * 4 pulses
+long            penPos          =       0;    // position of pendulum (from outside world perspective
+long            penPosM1        =       0;
+long            penPosM2        =       0;
+long            penPosMax       =       0;
+long            penPosMin       =       0;
+int             penState        =     ' ';    // current state like left side, left peek, right side, right peek
+int             penStateM1      =     ' ';
+long            penGap          =       0;    // the number of microseconds between two physical pulses
+int             encPositionM1   =       0;    // previous encoder position
 
-unsigned long     now;                        // current time in micro
-seconds
-int                progMode        =         0;    // the current
-function mode of the program like swinging or balancing
+unsigned long   now;                        // current time in micro seconds
+int             progMode    =   0;    // the current function mode of the program like swinging or balancing
 
 RotaryEncoder encoder;
 
@@ -804,8 +773,7 @@ int getCmd(int key) {
      else                     return   4;
 }
 
-// ===============================================================
-process Command
+// =============================================================== process Command
 
 int    cmdM1=0;
 
@@ -816,7 +784,7 @@ void processCommand(int cmd) {
 
      // ----------------------------------
 
-     if         (cmd ==  1 ) {     // MANUAL CONTROL
+     if cmd ==  1 ) {     // MANUAL CONTROL
          wheelMode= !wheelMode;
          show("wheel control : "+String(wheelMode));
      }
@@ -1009,8 +977,7 @@ rec[recSeriesNr][0][r]=rec[recSeriesNr][1][r]=0;
              if (penPos != lastPenPos && penPos % recSpeedResolution == 0) {
                  syncTime=micros();
 
-                 // calculate momentary time gap between two sync
-points, use negative times for moving left
+                 // calculate momentary time gap between two sync points, use negative times for moving left
                  gap= (syncTime-lastSyncTime) * (penPos-lastPenPos > 0 ?
 1 : -1);
                  lastSyncTime=syncTime;
@@ -1021,16 +988,14 @@ points, use negative times for moving left
                      posAbs = penPos % 9600;
                      if (posAbs<0) posAbs += 9600;
                      posAbs=posAbs/recResolution;
-                     // Serial.println("gap
-"+String(penPos)+"\t"+String(posAbs)+"\t"+String(gap));
+                     // Serial.println("gap"+String(penPos)+"\t"+String(posAbs)+"\t"+String(gap));
                      if (gap>=0) rec[recSeriesNr][0][posAbs] = gap;
                      if (gap<=0) rec[recSeriesNr][1][posAbs] = gap;
 
                      // at bottom
                      if (posAbs==0) {
 
-                         Serial.println("elapsed
-"+String(millis()-startedAt));
+                         Serial.println("elapsed"+String(millis()-startedAt));
 
                          ledsShow(0x070700);
 
@@ -1074,8 +1039,7 @@ void observe() {
      Serial.println("observing");
 
      #define OBS_MAX 5
-     long obs[8*OBS_MAX][3];    // bottom, right peek, bottom, left peek
---- time, pos, gap
+     long obs[8*OBS_MAX][3];    // bottom, right peek, bottom, left peek --- time, pos, gap
 
      long penPos, lastPenPos;
      unsigned long now_, lastNow_, then_, start_=0;
@@ -1083,11 +1047,9 @@ void observe() {
      for (int o=0;o<8*OBS_MAX;) {
          penPos     = penPosition();
          now_    = micros();
-         if (penPos==lastPenPos) continue;                // wait until
-pendulum position changes
+         if (penPos==lastPenPos) continue;                // wait until pendulum position changes
          // Serial.println(String(penPos));
-         if (                                            // before snap
-shot position
+         if (                                            // before snap shot position
                  (o%8==0 && penPos==   -48) ||
                  (o%8==1 && penPos==  1392) ||
                  (o%8==3 && penPos==  1488) ||
@@ -1097,8 +1059,7 @@ shot position
              ) {
              then_ = now_;
          }
-         else if (                                        // after snap
-shot position
+         else if (                                        // after snap shot position
                  (o%8==0 && penPos==    48) ||
                  (o%8==1 && penPos==  1488) ||
                  (o%8==3 && penPos==  1392) ||
@@ -1107,10 +1068,8 @@ shot position
                  (o%8==7 && penPos== -1392)
              ) {
              if (start_==0) start_ = (now_+then_) / 2;
-             obs[o][0] = (now_+then_) / 2 - start_;        //
-observation time
-             obs[o][1] = penPos + ((o%8>=3&&o%8<=5) ? 48 : -48);    //
-observed position
+             obs[o][0] = (now_+then_) / 2 - start_;        // observation time
+             obs[o][1] = penPos + ((o%8>=3&&o%8<=5) ? 48 : -48);    // observed position
              obs[o][2] = now_ - then_;                    // observed
 "speed" for 24 pulses = 96 ticks
              o++;
@@ -1119,11 +1078,9 @@ observed position
 after peek position
              (o%8==2 && penPos<lastPenPos) ||
              (o%8==6 && penPos>lastPenPos) ) {
-             obs[o][0] = lastNow_ - start_;            // observation
-time of peek
+             obs[o][0] = lastNow_ - start_;            // observation time of peek
              obs[o][1] = lastPenPos;                    // peek position
-             obs[o][2] = now_ - then_;                // "speed" for a
-single pulse = 4 ticks
+             obs[o][2] = now_ - then_;                // "speed" for a single pulse = 4 ticks
              o++;
              Serial.println("peek");
          }
